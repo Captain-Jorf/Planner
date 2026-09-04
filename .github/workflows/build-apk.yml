@@ -4,6 +4,7 @@ name: ساخت APK اندروید
 on:
   push:
     branches: ['**']
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
