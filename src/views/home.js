@@ -59,7 +59,7 @@ export const home = {
             ? `کار بعدی${next.time ? ' ساعت ' + toFa(next.time) : ''} ✨`
             : 'امروز کار بازی نداری. وقت استراحت 🌿'}</div>
         </div>
-        <img class="hero-illust" src="${heroImg}" alt="" />
+        <div class="hero-art"><img src="${heroImg}" alt="" /></div>
       </div>
 
       <div class="section-title"><span class="dot" style="background:var(--c-indigo)"></span> پیشرفت امروز</div>

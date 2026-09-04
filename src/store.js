@@ -1,7 +1,7 @@
 // مدیریت وضعیت با ذخیره‌سازی محلی (localStorage) — آفلاین و ماندگار
 import { todayKey } from './jalali.js'
 
-const KEY = 'planner.state.v2'
+const KEY = 'planner.state.v3'
 
 const tk = todayKey()
 

@@ -1,21 +1,31 @@
 import 'vazirmatn/Vazirmatn-font-face.css'
 import './theme.css'
-import { icon } from './icons.js'
 import { getState, subscribe } from './store.js'
 import { views } from './views/index.js'
 import { setNav } from './nav.js'
+import navCalendar from './assets/nav-calendar.png'
+import navTasks from './assets/nav-tasks.png'
+import navHome from './assets/nav-home.png'
+import navAgenda from './assets/nav-agenda.png'
+import navSettings from './assets/nav-settings.png'
+import bgDoodle from './assets/bg-pattern.png'
 
 const TABS = ['calendar', 'tasks', 'home', 'agenda', 'settings']
 let current = 'home'
 
 const app = document.getElementById('app')
 
+// تزریق تصویر پس‌زمینه‌ی دودل
+document.documentElement.style.setProperty('--bg-doodle', `url("${bgDoodle}")`)
+
 // شل اپ فقط یک‌بار ساخته می‌شود؛ فقط محتوای نما به‌روز می‌شود (بهینه)
 function buildShell() {
   app.innerHTML = `
     <main class="screen" id="screen"><div class="view" id="view-root"></div></main>
     <nav class="tabbar" id="tabbar"></nav>
-    <button class="home-fab" id="home-fab" data-tab="home" aria-label="خانه">${icon('home')}</button>
+    <button class="home-fab" id="home-fab" data-tab="home" aria-label="خانه">
+      <img class="nav-ic-img" src="${navHome}" alt="خانه" />
+    </button>
     <div class="toast" id="toast"></div>
   `
   buildTabbar()
@@ -24,14 +34,16 @@ function buildShell() {
 
 function buildTabbar() {
   const tabbar = app.querySelector('#tabbar')
-  const item = (id, label, ic) =>
-    `<button class="tab" data-tab="${id}">${icon(ic)}<span>${label}</span></button>`
+  const item = (id, label, img) =>
+    `<button class="tab" data-tab="${id}">
+       <img class="nav-ic-img" src="${img}" alt="${label}" /><span>${label}</span>
+     </button>`
   tabbar.innerHTML = `
-    ${item('calendar', 'تقویم', 'calendar')}
-    ${item('tasks', 'وظایف', 'tasks')}
+    ${item('calendar', 'تقویم', navCalendar)}
+    ${item('tasks', 'وظایف', navTasks)}
     <div class="tab spacer"></div>
-    ${item('agenda', 'برنامه', 'timeline')}
-    ${item('settings', 'تنظیمات', 'settings')}
+    ${item('agenda', 'برنامه', navAgenda)}
+    ${item('settings', 'تنظیمات', navSettings)}
   `
   tabbar.querySelectorAll('[data-tab]').forEach((el) =>
     el.addEventListener('click', () => go(el.dataset.tab)))

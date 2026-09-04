@@ -106,17 +106,16 @@ body {
   background: var(--bg);
 }
 
-/* بافت زمینه‌ی پست‌مدرن (نقطه‌چین ظریف مِمفیس) */
+/* بافت زمینه‌ی پست‌مدرن — تصویر illustration دودل‌های برنامه‌ریزی */
 #app::before {
   content: '';
   position: absolute; inset: 0;
-  background-image: radial-gradient(rgba(108,92,231,.10) 1.4px, transparent 1.4px);
-  background-size: 22px 22px;
-  opacity: .6; pointer-events: none; z-index: 0;
+  background-image: var(--bg-doodle);
+  background-size: 340px auto;
+  background-repeat: repeat;
+  opacity: .5; pointer-events: none; z-index: 0;
 }
-:root[data-theme='dark'] #app::before {
-  background-image: radial-gradient(rgba(155,89,246,.16) 1.4px, transparent 1.4px);
-}
+:root[data-theme='dark'] #app::before { opacity: .12; }
 
 .screen {
   flex: 1; position: relative; z-index: 1;
@@ -259,6 +258,13 @@ body {
   transition: color .18s ease; position: relative;
 }
 .tab svg { width: 25px; height: 25px; transition: transform .22s cubic-bezier(.2,.8,.2,1); }
+/* آیکون‌های illustration نوار پایین */
+.nav-ic-img {
+  width: 30px; height: 30px; object-fit: contain;
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), filter .2s ease;
+  filter: grayscale(.35) opacity(.72);
+}
+.tab.active .nav-ic-img { transform: translateY(-3px) scale(1.16); filter: none; }
 .tab.active { color: var(--brand); }
 .tab.active svg { transform: translateY(-2px) scale(1.12); }
 .tab.active::after {
@@ -279,6 +285,9 @@ body {
 }
 :root[data-theme='dark'] .home-fab { border-color: transparent; box-shadow: 4px 6px 0 #000; }
 .home-fab svg { width: 30px; height: 30px; }
+.home-fab .nav-ic-img {
+  width: 40px; height: 40px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
+}
 .home-fab:active { transform: translateX(-50%) translate(2px,3px); box-shadow: 2px 3px 0 var(--line); }
 .home-fab.active { background: var(--c-magenta); }
 
@@ -408,38 +417,45 @@ body {
    هیرو صفحه‌ی خانه — بلوک رنگی پست‌مدرن + استیکر تصویر
    ========================================================================== */
 .hero {
-  border-radius: var(--r-xl); padding: 20px; color: #fff;
+  border-radius: var(--r-xl); padding: 18px; color: #fff;
   background: var(--c-indigo);
   position: relative; overflow: hidden;
   border: 2.5px solid var(--line);
   box-shadow: 6px 7px 0 var(--line);
+  display: flex; align-items: center; gap: 12px;
 }
 :root[data-theme='dark'] .hero { border-color: transparent; box-shadow: 6px 7px 0 #000; }
-/* اشکال تزیینی مِمفیس */
+/* اشکال تزیینی مِمفیس (پشت محتوا، بدون هم‌پوشانی متن) */
 .hero::before {
   content: ''; position: absolute; top: -30px; left: -20px;
   width: 120px; height: 120px; border-radius: 50%;
-  background: var(--c-violet); opacity: .55;
+  background: var(--c-violet); opacity: .5; z-index: 0;
 }
 .hero::after {
-  content: ''; position: absolute; bottom: -34px; right: 40%;
+  content: ''; position: absolute; bottom: -34px; right: 34%;
   width: 90px; height: 90px; border-radius: 24px;
-  background: var(--c-magenta); opacity: .4; transform: rotate(20deg);
+  background: var(--c-magenta); opacity: .35; transform: rotate(20deg); z-index: 0;
 }
-.hero .hero-illust {
-  position: absolute; left: -10px; bottom: -14px; width: 150px;
-  z-index: 2; pointer-events: none;
-  filter: drop-shadow(0 8px 10px rgba(0,0,0,.25));
+.hero .hero-content { position: relative; z-index: 3; flex: 1; min-width: 0; text-align: right; }
+.hero .hero-art {
+  position: relative; z-index: 2; flex-shrink: 0;
+  width: 118px; height: 118px; display: grid; place-items: center;
 }
-.hero .hero-content { position: relative; z-index: 3; max-width: 58%; margin-inline-start: auto; text-align: right; }
+.hero .hero-art img {
+  width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,.28));
+}
 .hero .hero-date { font-size: 12px; font-weight: 800; opacity: .95; }
-.hero .hero-big { font-size: 24px; font-weight: 900; margin: 8px 0 6px; letter-spacing: -.5px; line-height: 1.22; }
+.hero .hero-big { font-size: 22px; font-weight: 900; margin: 7px 0 6px; letter-spacing: -.5px; line-height: 1.24; word-break: break-word; }
 .hero .hero-sub { font-size: 13px; opacity: .96; line-height: 1.6; font-weight: 700; }
 
 /* اسکرول افقی */
 .hscroll { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 6px; }
 .hscroll::-webkit-scrollbar { height: 0; }
 .hscroll .chip { flex-shrink: 0; }
+
+/* ردیف انتخاب رنگ رویداد — می‌شکند، اسکرول نمی‌خورد */
+.color-row { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* ==========================================================================
    تایم‌لاین

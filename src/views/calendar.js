@@ -71,11 +71,12 @@ export const calendar = {
           <input class="input" id="ev-time" type="text" inputmode="numeric" placeholder="۰۹:۳۰"
             style="max-width:90px; text-align:center" />
         </div>
-        <div class="hscroll" style="margin-top:12px; align-items:center">
+        <div style="font-size:12px; color:var(--text-soft); font-weight:800; margin:14px 2px 8px">رنگ رویداد</div>
+        <div class="color-row">
           ${EVENT_COLORS.map(colorDot).join('')}
-          <button class="btn btn-brand" id="add-ev" style="margin-inline-start:auto; padding:9px 16px">
-            ${icon('plus', 'width="18" height="18"')} افزودن</button>
         </div>
+        <button class="btn btn-brand btn-block" id="add-ev" style="margin-top:14px">
+          ${icon('plus', 'width="18" height="18"')} افزودن رویداد</button>
       </div>
 
       <div style="margin-top:14px" id="ev-list">
