@@ -1,7 +1,7 @@
 import { icon } from '../icons.js'
 import emptyImg from '../assets/empty-agenda.png'
 import celebrateImg from '../assets/celebrate.png'
-import { getState, sortTasks, update } from '../store.js'
+import { getState, update, tasksForDay, taskEnd, getTag } from '../store.js'
 import { go, refresh } from '../nav.js'
 import { todayKey, toFa, todayJalali, longDate } from '../jalali.js'
 import { PRIO, bindTaskChecks } from './tasks.js'
@@ -15,69 +15,81 @@ function periodLabel(time) {
   return 'شب'
 }
 
+function toMin(tm) { if (!tm) return 99999; const [h, m] = tm.split(':').map(Number); return h * 60 + m }
+
+// ادغام کارها و رویدادها در یک جریان زمانی واحد
+function buildStream(s, tk) {
+  const items = []
+  tasksForDay(tk).forEach((t) => items.push({
+    kind: 'task', id: t.id, title: t.text, time: t.time,
+    end: t.time && t.dur ? taskEnd(t.time, t.dur) : '', dur: t.dur,
+    prio: t.prio, tags: t.tags || [], done: t.done, repeat: t.repeat,
+  }))
+  ;(s.events[tk] || []).forEach((e) => items.push({
+    kind: 'event', id: e.id, title: e.title, time: e.time,
+    end: e.end || '', color: e.color, done: false,
+  }))
+  return items.sort((a, b) => toMin(a.time) - toMin(b.time))
+}
+
 export const agenda = {
   render() {
     const s = getState()
     const t = todayJalali()
     const tk = todayKey()
-    const todays = sortTasks(s.tasks.filter((x) => x.day === tk))
-    const done = todays.filter((x) => x.done).length
-    const pct = todays.length ? Math.round((done / todays.length) * 100) : 0
+    const stream = buildStream(s, tk)
+    const taskItems = stream.filter((x) => x.kind === 'task')
+    const done = taskItems.filter((x) => x.done).length
+    const pct = taskItems.length ? Math.round((done / taskItems.length) * 100) : 0
 
-    if (todays.length === 0) {
+    if (stream.length === 0) {
       return `
-        ${header(t, done, todays.length)}
+        ${header(t, done, taskItems.length)}
         <div class="empty"><img src="${emptyImg}" alt="" />
-          <p>پایپ‌لاین امروزت خالی است</p></div>
+          <p>تایم‌لاین امروزت خالی است</p></div>
         <button class="btn btn-brand btn-block" data-jump="tasks" style="margin-top:8px">
-          ${icon('plus', 'width="20" height="20"')} افزودن کار به برنامه</button>`
+          ${icon('plus', 'width=\"20\" height=\"20\"')} افزودن کار به برنامه</button>`
     }
 
-    // نشانگر «اکنون» بین کارها
+    // نشانگر «اکنون»
     const now = new Date()
     const nowMin = now.getHours() * 60 + now.getMinutes()
-    const toMin = (tm) => { if (!tm) return 99999; const [h, m] = tm.split(':').map(Number); return h * 60 + m }
 
-    // ساخت ردیف‌های پایپ‌لاین با برچسب بخش وقتی تغییر می‌کند
     let lastPeriod = null
     let nowInserted = false
     const rows = []
-    todays.forEach((task, idx) => {
-      // درج نشانگر اکنون قبل از اولین کار آینده
-      if (!nowInserted && toMin(task.time) > nowMin && task.time) {
-        rows.push(nowMarker())
-        nowInserted = true
+    stream.forEach((item, idx) => {
+      if (!nowInserted && item.time && toMin(item.time) > nowMin) {
+        rows.push(nowMarker()); nowInserted = true
       }
-      const per = periodLabel(task.time)
+      const per = periodLabel(item.time)
       if (per !== lastPeriod) { rows.push(periodDivider(per)); lastPeriod = per }
-      rows.push(pipeItem(task, idx === todays.length - 1))
+      rows.push(streamItem(item, idx === stream.length - 1))
     })
 
     return `
-      ${header(t, done, todays.length)}
+      ${header(t, done, taskItems.length)}
 
       <div class="agenda-summary card">
-        <div class="ring-mini">
-          ${miniRing(pct)}
-        </div>
+        <div class="ring-mini">${miniRing(pct)}</div>
         <div style="flex:1; min-width:0">
-          <div style="font-weight:900; font-size:16px">پایپ‌لاین امروز</div>
+          <div style="font-weight:900; font-size:16px">تایم‌لاین امروز</div>
           <div style="font-size:12.5px; color:var(--text-soft); font-weight:700; margin-top:3px">
-            ${toFa(done)} از ${toFa(todays.length)} کار انجام شد · ${toFa(pct)}٪</div>
+            ${toFa(done)} از ${toFa(taskItems.length)} کار · ${toFa((s.events[tk] || []).length)} رویداد</div>
         </div>
         <span class="chip" style="background:${pct === 100 ? 'rgba(31,184,119,.16)' : 'rgba(108,92,231,.14)'};
           color:${pct === 100 ? 'var(--c-success)' : 'var(--c-indigo)'}">
           ${pct === 100 ? 'کامل ✓' : 'در جریان'}</span>
       </div>
 
-      ${pct === 100
-        ? `<div class="empty"><img src="${celebrateImg}" alt="" /><p>کل پایپ‌لاین امروز تکمیل شد! 🎉</p></div>`
+      ${pct === 100 && taskItems.length
+        ? `<div class="empty"><img src="${celebrateImg}" alt="" /><p>همه‌ی کارهای امروز تکمیل شد! 🎉</p></div>`
         : ''}
 
       <div class="pipe">${rows.join('')}</div>
 
       <button class="btn btn-ghost btn-block" data-jump="tasks" style="margin-top:6px">
-        ${icon('plus', 'width="18" height="18"')} افزودن کار جدید</button>
+        ${icon('plus', 'width=\"18\" height=\"18\"')} افزودن کار جدید</button>
     `
   },
 
@@ -91,6 +103,13 @@ export const agenda = {
         update((s) => { s.tasks = s.tasks.filter((x) => x.id !== id) })
         refresh()
       }))
+    root.querySelectorAll('[data-delev]').forEach((el) =>
+      el.addEventListener('click', () => {
+        const id = +el.dataset.delev
+        const tk = todayKey()
+        update((s) => { if (s.events[tk]) s.events[tk] = s.events[tk].filter((e) => e.id !== id) })
+        refresh()
+      }))
   },
 }
 
@@ -102,7 +121,7 @@ function header(t, done, total) {
         <h1>برنامه‌ی روز</h1>
       </div>
       <div class="chip" style="background:rgba(31,184,119,.15); color:var(--c-success)">
-        ${icon('check', 'width="14" height="14"')} ${toFa(done)}/${toFa(total)}
+        ${icon('check', 'width=\"14\" height=\"14\"')} ${toFa(done)}/${toFa(total)}
       </div>
     </div>`
 }
@@ -120,7 +139,6 @@ function miniRing(pct) {
     </svg>`
 }
 
-// برچسب بخش (صبح/بعدازظهر/شب) روی پایپ‌لاین
 function periodDivider(label) {
   return `
     <div class="pipe-divider">
@@ -130,9 +148,9 @@ function periodDivider(label) {
     </div>`
 }
 
-// نشانگر «اکنون»
 function nowMarker() {
-  const now = todayJalaliTime()
+  const d = new Date()
+  const now = toFa(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`)
   return `
     <div class="pipe-now">
       <span class="pn-dot"></span>
@@ -141,33 +159,69 @@ function nowMarker() {
     </div>`
 }
 
-function todayJalaliTime() {
-  const d = new Date()
-  return toFa(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`)
+// یک ایستگاه از تایم‌لاین یکپارچه — کار یا رویداد
+function streamItem(item, isLast) {
+  if (item.kind === 'event') return eventStation(item, isLast)
+  return taskStation(item, isLast)
 }
 
-// یک ایستگاه از پایپ‌لاین
-function pipeItem(t, isLast) {
+function taskStation(t, isLast) {
   const p = PRIO[t.prio] || PRIO.mid
   const color = t.done ? 'var(--c-success)' : p.color
+  const timeLabel = t.time
+    ? `${toFa(t.time)}${t.end ? '<span class="pi-end">' + toFa(t.end) + '</span>' : ''}`
+    : '—'
+  const tagChips = (t.tags || []).map((id) => {
+    const tag = getTag(id); if (!tag) return ''
+    return `<span class="tag-pill" style="background:${tag.color}1f; color:${tag.color}">
+      <span class="prio-tag" style="background:${tag.color}"></span>${escape(tag.name)}</span>`
+  }).join('')
   return `
     <div class="pipe-item ${t.done ? 'done' : ''}">
-      <div class="pi-time">
-        <span class="pi-hh">${t.time ? toFa(t.time) : '—'}</span>
-      </div>
+      <div class="pi-time"><span class="pi-hh">${timeLabel}</span></div>
       <div class="pi-rail">
         <span class="pi-node" style="background:${color}; box-shadow:0 0 0 4px color-mix(in srgb, ${color} 22%, transparent)"></span>
         ${isLast ? '' : '<span class="pi-line"></span>'}
       </div>
       <div class="pi-card" style="border-inline-start:5px solid ${color}">
         <div class="pi-main">
-          <span class="pi-title">${escape(t.text)}</span>
-          <span class="pi-prio" style="background:${p.bg}; color:${p.color}">
-            <span class="prio-tag" style="background:${p.color}"></span>${p.label}</span>
+          <span class="pi-title">${escape(t.title)}</span>
+          <div class="pi-meta">
+            <span class="pi-prio" style="background:${p.bg}; color:${p.color}">
+              <span class="prio-tag" style="background:${p.color}"></span>${p.label}</span>
+            ${tagChips}
+          </div>
         </div>
         <div class="pi-actions">
           <div class="check ${t.done ? 'on' : ''}" data-toggle="${t.id}">${icon('check')}</div>
-          <button class="del" data-del="${t.id}">${icon('trash', 'width="15" height="15"')}</button>
+          <button class="del" data-del="${t.id}">${icon('trash', 'width=\"15\" height=\"15\"')}</button>
+        </div>
+      </div>
+    </div>`
+}
+
+function eventStation(e, isLast) {
+  const color = e.color || 'var(--c-magenta)'
+  const timeLabel = e.time
+    ? `${toFa(e.time)}${e.end ? '<span class="pi-end">' + toFa(e.end) + '</span>' : ''}`
+    : '—'
+  return `
+    <div class="pipe-item is-event">
+      <div class="pi-time"><span class="pi-hh">${timeLabel}</span></div>
+      <div class="pi-rail">
+        <span class="pi-node ev" style="background:${color}; box-shadow:0 0 0 4px color-mix(in srgb, ${color} 22%, transparent)"></span>
+        ${isLast ? '' : '<span class="pi-line"></span>'}
+      </div>
+      <div class="pi-card" style="border-inline-start:5px solid ${color}; background:color-mix(in srgb, ${color} 8%, var(--surface))">
+        <div class="pi-main">
+          <span class="pi-title">${escape(e.title)}</span>
+          <div class="pi-meta">
+            <span class="pi-prio" style="background:${color}22; color:${color}">
+              ${icon('calendar', 'width=\"12\" height=\"12\"')} رویداد</span>
+          </div>
+        </div>
+        <div class="pi-actions">
+          <button class="del" data-delev="${e.id}">${icon('trash', 'width=\"15\" height=\"15\"')}</button>
         </div>
       </div>
     </div>`

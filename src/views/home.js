@@ -1,9 +1,12 @@
 import { icon } from '../icons.js'
 import heroImg from '../assets/hero.png'
-import { getState, sortTasks } from '../store.js'
-import { go, refresh } from '../nav.js'
+import { getState, update, nextId, sortTasks, tasksForDay, taskEnd } from '../store.js'
+import { go, refresh, toast } from '../nav.js'
 import { todayJalali, longDate, toFa, todayKey } from '../jalali.js'
 import { PRIO, bindTaskChecks } from './tasks.js'
+
+const NOTE_COLORS = ['#ffc531', '#ff8a3d', '#23c98a', '#2ba8f5', '#9b59f6', '#e04bce']
+let noteColor = NOTE_COLORS[0]
 
 function ring(pct, color) {
   const r = 40, c = 2 * Math.PI * r
@@ -24,13 +27,13 @@ export const home = {
     const s = getState()
     const t = todayJalali()
     const tk = todayKey()
-    const todays = sortTasks(s.tasks.filter((x) => x.day === tk))
+    const todays = sortTasks(tasksForDay(tk))
     const doneCount = todays.filter((x) => x.done).length
     const taskPct = todays.length ? Math.round((doneCount / todays.length) * 100) : 0
     const evs = s.events[tk] || []
     const next = todays.find((x) => !x.done)
+    const notes = s.notes || []
 
-    // تایم‌لاین کوچک: حداکثر ۴ مورد بعدی (کارهای انجام‌نشده اول، به‌ترتیب زمان)
     const timeline = todays.slice(0, 5)
 
     return `
@@ -72,12 +75,29 @@ export const home = {
       <div class="section-title">
         <span class="dot" style="background:var(--c-tangerine)"></span> تایم‌لاین امروز
         <span class="grow"></span>
-        <button class="link" data-jump="tasks">همه</button>
+        <button class="link" data-jump="agenda">همه</button>
       </div>
       ${timeline.length === 0
         ? `<div class="card" style="text-align:center; color:var(--text-soft); font-weight:700; padding:22px">
              هنوز کاری برای امروز نداری</div>`
         : `<div class="timeline">${timeline.map((x) => tlItem(x)).join('')}</div>`}
+
+      <div class="section-title">
+        <span class="dot" style="background:var(--c-sunflower)"></span> یادداشت‌ها
+        <span class="grow"></span>
+      </div>
+      <div class="card" style="padding:14px">
+        <div style="display:flex; gap:10px; align-items:center">
+          <input class="input" id="note-input" placeholder="یک یادداشت سریع بنویس..." style="flex:1" />
+          <button class="btn btn-brand btn-icon" id="add-note" style="flex-shrink:0">
+            ${icon('plus', 'width=\"18\" height=\"18\"')}</button>
+        </div>
+        <div class="color-row" style="margin-top:12px">${NOTE_COLORS.map(noteDot).join('')}</div>
+      </div>
+      ${notes.length
+        ? `<div class="notes-grid">${notes.map(noteCard).join('')}</div>`
+        : `<div class="card" style="text-align:center; color:var(--text-soft); font-weight:700; padding:16px; margin-top:10px">
+             هنوز یادداشتی نداری</div>`}
 
       <div class="section-title"><span class="dot" style="background:var(--c-mint)"></span> یک نگاه سریع</div>
       <div class="stat-grid">
@@ -105,7 +125,7 @@ export const home = {
 
       <div style="height:14px"></div>
       <button class="btn btn-brand btn-block" data-jump="tasks">
-        ${icon('plus', 'width="20" height="20"')} افزودن کار جدید
+        ${icon('plus', 'width=\"20\" height=\"20\"')} افزودن کار جدید
       </button>
     `
   },
@@ -114,11 +134,51 @@ export const home = {
     root.querySelectorAll('[data-jump]').forEach((el) =>
       el.addEventListener('click', () => go(el.dataset.jump)))
     bindTaskChecks(root, refresh)
+
+    // یادداشت‌ها
+    root.querySelectorAll('[data-notecolor]').forEach((el) =>
+      el.addEventListener('click', () => { noteColor = el.dataset.notecolor; refresh() }))
+    const noteInput = root.querySelector('#note-input')
+    const addNote = () => {
+      const v = noteInput.value.trim()
+      if (!v) { toast('چیزی بنویس ✍️'); noteInput.focus(); return }
+      const id = nextId()
+      update((s) => { s.notes.unshift({ id, text: v, color: noteColor, ts: Date.now() }) })
+      noteInput.value = ''
+      toast('یادداشت ذخیره شد 📝')
+      refresh()
+    }
+    root.querySelector('#add-note').addEventListener('click', addNote)
+    noteInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addNote() })
+    root.querySelectorAll('[data-delnote]').forEach((el) =>
+      el.addEventListener('click', () => {
+        const id = +el.dataset.delnote
+        update((s) => { s.notes = s.notes.filter((n) => n.id !== id) })
+        toast('حذف شد 🗑️')
+        refresh()
+      }))
   },
+}
+
+function noteDot(c) {
+  const on = noteColor === c
+  return `<button data-notecolor="${c}"
+    style="width:26px;height:26px;border-radius:50%;background:${c};
+    border:${on ? '3px solid var(--text)' : '2px solid var(--border)'};cursor:pointer;flex-shrink:0"></button>`
+}
+
+function noteCard(n) {
+  return `
+    <div class="note-card" style="background:${n.color}22; border-color:${n.color}">
+      <span class="note-tab" style="background:${n.color}"></span>
+      <div class="note-text">${escape(n.text)}</div>
+      <button class="note-del" data-delnote="${n.id}">${icon('trash', 'width=\"14\" height=\"14\"')}</button>
+    </div>`
 }
 
 function tlItem(t) {
   const p = PRIO[t.prio] || PRIO.mid
+  const end = t.time && t.dur ? taskEnd(t.time, t.dur) : ''
   return `
     <div class="tl-item">
       <div class="tl-rail">
@@ -126,7 +186,7 @@ function tlItem(t) {
         <div class="tl-line"></div>
       </div>
       <div class="tl-body ${t.done ? 'done' : ''}">
-        <span class="tl-time">${t.time ? toFa(t.time) : '—'}</span>
+        <span class="tl-time">${t.time ? toFa(t.time) + (end ? '–' + toFa(end) : '') : '—'}</span>
         <span class="tl-title">${escape(t.text)}</span>
         <div class="check ${t.done ? 'on' : ''}" data-toggle="${t.id}">${icon('check')}</div>
       </div>

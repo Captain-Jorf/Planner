@@ -57,6 +57,14 @@ export function longDate(jy, jm, jd, dow) {
   return `${WEEK_DAYS[dow]} ${toFa(jd)} ${MONTHS[jm - 1]} ${toFa(jy)}`
 }
 
+// روز هفته‌ی یک کلید روز (شنبه=0..جمعه=6)
+export function dowOfKey(key) {
+  const [jy, jm, jd] = String(key).split('-').map(Number)
+  const g = jalaali.toGregorian(jy, jm, jd)
+  const d = new Date(g.gy, g.gm - 1, g.gd)
+  return jsDowToShamsi(d.getDay())
+}
+
 // آیا این کلید مربوط به امروز است؟
 export function isToday(jy, jm, jd) {
   const t = todayJalali()
