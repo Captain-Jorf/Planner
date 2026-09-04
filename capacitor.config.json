@@ -1,0 +1,9 @@
+{
+  "appId": "ir.planner.daily",
+  "appName": "برنامه‌ریز روزانه",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  },
+  "backgroundColor": "#f6f5fcff"
+}

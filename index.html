@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#6c5ce7" />
+  <title>برنامه‌ریز روزانه</title>
+  <style>
+    html, body { margin: 0; background: #f6f5fc; }
+    #boot {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      background: linear-gradient(135deg, #6c5ce7, #38b6ff); z-index: 999;
+      transition: opacity .4s ease;
+    }
+    #boot .bx { text-align: center; color: #fff; font-family: system-ui, sans-serif; }
+    #boot .ring {
+      width: 54px; height: 54px; border: 5px solid rgba(255,255,255,.35);
+      border-top-color: #fff; border-radius: 50%; margin: 0 auto 14px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="boot"><div class="bx"><div class="ring"></div><div>در حال بارگذاری…</div></div></div>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    window.addEventListener('load', () => {
+      const b = document.getElementById('boot')
+      if (b) { b.style.opacity = '0'; setTimeout(() => b.remove(), 450) }
+    })
+  </script>
+</body>
+</html>

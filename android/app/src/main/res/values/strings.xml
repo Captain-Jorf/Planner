@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">برنامه‌ریز روزانه</string>
+    <string name="title_activity_main">برنامه‌ریز روزانه</string>
+    <string name="package_name">ir.planner.daily</string>
+    <string name="custom_url_scheme">ir.planner.daily</string>
+</resources>
