@@ -129,19 +129,6 @@ export const welcomeSvg = `
   <path d="M116 120h16" stroke="#cfc9ea"/>
 </svg>`
 
-// ---- زنگ/آلارم برای صفحه‌ی راهنمای یادآوری ----
-export const bellSvg = `
-<svg class="il il-onb" viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg"
-  stroke="${S}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="120" cy="96" r="74" fill="#efe9ff" stroke="none"/>
-  <path d="M120 40c22 0 34 16 34 40 0 18 6 24 12 32H74c6-8 12-14 12-32 0-24 12-40 34-40z" fill="#ffd23f"/>
-  <path d="M108 124a12 12 0 0 0 24 0" fill="#ff8a3d"/>
-  <circle cx="120" cy="36" r="6" fill="#ff5d73"/>
-  <path d="M64 70c-4-8-2-16 4-22M176 70c4-8 2-16-4-22" stroke="#2ba8f5"/>
-  <circle cx="150" cy="150" r="7" fill="#23c98a" stroke="none"/>
-  <circle cx="86" cy="150" r="5" fill="#e04bce" stroke="none"/>
-</svg>`
-
 // ---- تگ/دسته برای صفحه‌ی راهنمای سازمان‌دهی ----
 export const organizeSvg = `
 <svg class="il il-onb" viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg"

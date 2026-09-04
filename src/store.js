@@ -17,7 +17,6 @@ const defaultState = {
   onboarded: false,    // آیا صفحات راهنما و پرسش نام انجام شده؟
   theme: 'light',
   accent: 'indigo',
-  notif: true,
   tags: structuredClone(DEFAULT_TAGS),
   tasks: [
     // حالت پیش‌فرض کاملاً خالی است — هیچ کاری از قبل وجود ندارد

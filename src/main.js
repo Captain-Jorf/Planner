@@ -5,9 +5,8 @@ import { views } from './views/index.js'
 import { onboarding } from './views/onboarding.js'
 import { setNav } from './nav.js'
 import { navIcons } from './navicons.js'
-import { syncAlarms } from './alarms.js'
 
-const TABS = ['calendar', 'tasks', 'home', 'agenda', 'settings']
+const TABS = ['tasks', 'performance', 'home', 'agenda', 'settings']
 let current = 'home'
 
 const app = document.getElementById('app')
@@ -24,8 +23,6 @@ function showOnboarding() {
 function startApp() {
   buildShell()
   renderView(true)
-  // زمان‌بندی یادآوری‌ها بر پایه‌ی وضعیت فعلی
-  syncAlarms().catch(() => {})
 }
 
 // شل اپ فقط یک‌بار ساخته می‌شود؛ فقط محتوای نما به‌روز می‌شود (بهینه)
@@ -49,8 +46,8 @@ function buildTabbar() {
        <span class="nav-ic">${svg}</span><span>${label}</span>
      </button>`
   tabbar.innerHTML = `
-    ${item('calendar', 'تقویم', navIcons.calendar)}
     ${item('tasks', 'وظایف', navIcons.tasks)}
+    ${item('performance', 'عملکرد', navIcons.performance)}
     <div class="tab spacer"></div>
     ${item('agenda', 'برنامه', navIcons.agenda)}
     ${item('settings', 'تنظیمات', navIcons.settings)}
@@ -110,14 +107,6 @@ function applyTheme() {
 
 setNav({ go, toast, refresh })
 subscribe(applyTheme)
-
-// هر بار داده تغییر کرد، یادآوری‌ها را دوباره بچین (بی‌خطر روی وب)
-let alarmTimer
-subscribe(() => {
-  if (!getState().onboarded) return
-  clearTimeout(alarmTimer)
-  alarmTimer = setTimeout(() => { syncAlarms().catch(() => {}) }, 600)
-})
 
 applyTheme()
 if (getState().onboarded) {
