@@ -1,26 +1,25 @@
 // مدیریت وضعیت با ذخیره‌سازی محلی (localStorage) — آفلاین و ماندگار
 import { todayKey } from './jalali.js'
 
-const KEY = 'planner.state.v1'
+const KEY = 'planner.state.v2'
+
+const tk = todayKey()
 
 const defaultState = {
   user: 'دوست خوب',
   theme: 'light',
   notif: true,
   tasks: [
-    { id: 1, text: 'مرور برنامه‌ی امروز', done: true, prio: 'mid', day: todayKey() },
-    { id: 2, text: 'نوشتن گزارش هفتگی', done: false, prio: 'high', day: todayKey() },
-    { id: 3, text: 'تماس با خانواده', done: false, prio: 'low', day: todayKey() },
+    { id: 1, text: 'مرور برنامه‌ی امروز', done: true,  prio: 'mid',  time: '08:00', day: tk },
+    { id: 2, text: 'ورزش صبحگاهی',        done: true,  prio: 'low',  time: '09:00', day: tk },
+    { id: 3, text: 'نوشتن گزارش هفتگی',   done: false, prio: 'high', time: '11:30', day: tk },
+    { id: 4, text: 'جلسه‌ی تیم',           done: false, prio: 'high', time: '14:00', day: tk },
+    { id: 5, text: 'تماس با خانواده',      done: false, prio: 'low',  time: '19:30', day: tk },
+    { id: 6, text: 'مطالعه‌ی کتاب',        done: false, prio: 'mid',  time: '22:00', day: tk },
   ],
   events: {
     // dayKey -> [ {id, title, time, color} ]
   },
-  habits: [
-    { id: 1, name: 'نوشیدن آب', icon: 'drop', color: '#38b6ff', week: [true, true, false, true, false, false, false] },
-    { id: 2, name: 'ورزش صبحگاهی', icon: 'dumbbell', color: '#ff8a3d', week: [true, false, true, false, false, false, false] },
-    { id: 3, name: 'مطالعه', icon: 'book', color: '#37d9a0', week: [false, true, true, true, false, false, false] },
-    { id: 4, name: 'مدیتیشن', icon: 'leaf', color: '#9b59f6', week: [true, true, true, false, false, false, false] },
-  ],
   seq: 100,
 }
 
@@ -40,7 +39,6 @@ function persist() {
 }
 
 export function getState() { return state }
-
 export function subscribe(fn) { subs.add(fn); return () => subs.delete(fn) }
 
 export function update(mutator) {
@@ -59,4 +57,13 @@ export function resetAll() {
   state = structuredClone(defaultState)
   persist()
   subs.forEach((fn) => fn(state))
+}
+
+// --- کمک‌کارهای وظایف ---
+export function sortTasks(list) {
+  return [...list].sort((a, b) => {
+    const ta = a.time || '99:99'
+    const tb = b.time || '99:99'
+    return ta.localeCompare(tb)
+  })
 }

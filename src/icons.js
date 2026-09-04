@@ -30,6 +30,11 @@ export const icons = {
   info: s('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
   edit: s('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
   water: s('<path d="M12 3s6 6 6 10a6 6 0 0 1-12 0c0-4 6-10 6-10Z"/>'),
+  timeline: s('<path d="M6 4v16"/><circle cx="6" cy="8" r="2.2"/><circle cx="6" cy="16" r="2.2"/><path d="M10 8h9M10 16h6"/>'),
+  sunrise: s('<path d="M12 3v5M5.5 9.5 7 11M18.5 9.5 17 11M3 15h18M6 19h12M12 8a5 5 0 0 1 5 5H7a5 5 0 0 1 5-5Z"/>'),
+  coffee: s('<path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 9h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M7 2.5v2M11 2.5v2"/>'),
+  briefcase: s('<rect x="3" y="8" width="18" height="12" rx="3"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>'),
+  arrowLeft: s('<path d="M19 12H5M12 5l-7 7 7 7"/>'),
 }
 
 export function icon(name, extra = '') {

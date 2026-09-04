@@ -1,22 +1,31 @@
 import { icon } from '../icons.js'
-import { heroIllust } from '../illustrations.js'
-import { getState } from '../store.js'
-import { go } from '../nav.js'
+import heroImg from '../assets/hero.png'
+import { getState, sortTasks } from '../store.js'
+import { go, refresh } from '../nav.js'
 import { todayJalali, longDate, toFa, todayKey } from '../jalali.js'
-import { attachTilt } from './util.js'
+import { PRIO, bindTaskChecks } from './tasks.js'
 
-function progressRing(pct, color) {
-  const r = 42, c = 2 * Math.PI * r
+function ring(pct, color) {
+  const r = 40, c = 2 * Math.PI * r
   const off = c * (1 - pct / 100)
   return `
     <div class="ring">
-      <svg width="96" height="96" viewBox="0 0 96 96">
-        <circle cx="48" cy="48" r="${r}" fill="none" stroke="var(--border)" stroke-width="9"/>
-        <circle cx="48" cy="48" r="${r}" fill="none" stroke="${color}" stroke-width="9"
+      <svg width="92" height="92" viewBox="0 0 92 92">
+        <circle cx="46" cy="46" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="9"/>
+        <circle cx="46" cy="46" r="${r}" fill="none" stroke="${color}" stroke-width="9"
           stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
       </svg>
-      <div class="ring-label">${toFa(pct)}٪</div>
+      <div class="ring-label" style="color:${color}">${toFa(pct)}٪</div>
     </div>`
+}
+
+// انتخاب آیکون خوشامد بر اساس ساعت روز رویداد تایم‌لاین
+function timeBadge(time) {
+  const h = parseInt((time || '12').split(':')[0], 10)
+  if (h < 9) return { ic: 'sunrise', color: 'var(--c-tangerine)' }
+  if (h < 12) return { ic: 'coffee', color: 'var(--c-teal)' }
+  if (h < 18) return { ic: 'briefcase', color: 'var(--c-azure)' }
+  return { ic: 'moon', color: 'var(--c-indigo)' }
 }
 
 export const home = {
@@ -24,86 +33,114 @@ export const home = {
     const s = getState()
     const t = todayJalali()
     const tk = todayKey()
-    const todays = s.tasks.filter((x) => x.day === tk)
+    const todays = sortTasks(s.tasks.filter((x) => x.day === tk))
     const doneCount = todays.filter((x) => x.done).length
     const taskPct = todays.length ? Math.round((doneCount / todays.length) * 100) : 0
-
-    const habitToday = s.habits.filter((h) => h.week[t.dow]).length
-    const habitPct = s.habits.length ? Math.round((habitToday / s.habits.length) * 100) : 0
-
+    const evs = s.events[tk] || []
     const next = todays.find((x) => !x.done)
+
+    // تایم‌لاین کوچک: حداکثر ۴ مورد بعدی (کارهای انجام‌نشده اول، به‌ترتیب زمان)
+    const timeline = todays.slice(0, 5)
 
     return `
       <div class="topbar">
         <div>
           <div class="eyebrow">${greeting()}</div>
-          <h1>${s.user} 👋</h1>
+          <h1>${escape(s.user)} 👋</h1>
         </div>
         <div class="avatar">${(s.user || '؟').trim().charAt(0)}</div>
       </div>
 
-      <div class="hero card tilt">
+      <div class="hero">
         <div class="hero-content">
           <div class="hero-date">${longDate(t.jy, t.jm, t.jd, t.dow)}</div>
-          <div class="hero-big">${next ? next.text : 'همه چیز عالیه!'}</div>
+          <div class="hero-big">${next ? escape(next.text) : 'همه چیز عالیه!'}</div>
           <div class="hero-sub">${next
-            ? 'کار بعدی‌ات همین است، بزن بریم ✨'
-            : 'امروز وظیفه‌ی باز نداری. وقت استراحت 🌿'}</div>
+            ? `کار بعدی${next.time ? ' ساعت ' + toFa(next.time) : ''} ✨`
+            : 'امروز کار بازی نداری. وقت استراحت 🌿'}</div>
         </div>
-        <div class="hero-illust">${heroIllust}</div>
+        <img class="hero-illust" src="${heroImg}" alt="" />
       </div>
 
       <div class="section-title"><span class="dot" style="background:var(--c-indigo)"></span> پیشرفت امروز</div>
       <div class="card">
-        <div style="display:flex; gap:20px; align-items:center; justify-content:space-around;">
-          <div class="ring-wrap" style="flex-direction:column; gap:8px;">
-            ${progressRing(taskPct, 'var(--c-indigo)')}
-            <div style="font-size:13px; font-weight:700; color:var(--text-soft)">وظایف</div>
-          </div>
-          <div class="ring-wrap" style="flex-direction:column; gap:8px;">
-            ${progressRing(habitPct, 'var(--c-mint)')}
-            <div style="font-size:13px; font-weight:700; color:var(--text-soft)">عادت‌ها</div>
+        <div style="display:flex; gap:16px; align-items:center;">
+          ${ring(taskPct, 'var(--c-indigo)')}
+          <div style="flex:1">
+            <div style="font-weight:800; font-size:16px; margin-bottom:6px">
+              ${toFa(doneCount)} از ${toFa(todays.length)} کار انجام شد
+            </div>
+            <div class="pbar"><span style="width:${taskPct}%; background:var(--c-indigo)"></span></div>
+            <div style="font-size:12px; color:var(--text-soft); font-weight:700; margin-top:8px">
+              ${taskPct === 100 ? 'کارت عالی بود! 🎉' : `${toFa(todays.length - doneCount)} کار باقی مانده`}
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="section-title"><span class="dot" style="background:var(--c-tangerine)"></span> یک نگاه سریع</div>
+      <div class="section-title">
+        <span class="dot" style="background:var(--c-tangerine)"></span> تایم‌لاین امروز
+        <span class="grow"></span>
+        <button class="link" data-jump="tasks">همه</button>
+      </div>
+      ${timeline.length === 0
+        ? `<div class="card" style="text-align:center; color:var(--text-soft); font-weight:700; padding:22px">
+             هنوز کاری برای امروز نداری</div>`
+        : `<div class="timeline">${timeline.map((x) => tlItem(x)).join('')}</div>`}
+
+      <div class="section-title"><span class="dot" style="background:var(--c-mint)"></span> یک نگاه سریع</div>
       <div class="stat-grid">
-        <div class="stat" style="background:var(--grad-sun)" data-jump="tasks">
+        <div class="stat" style="background:var(--c-sunflower); color:var(--c-ink)" data-jump="tasks">
           <div class="num">${toFa(todays.length - doneCount)}</div>
-          <div class="cap">وظیفه‌ی باقی‌مانده</div>
+          <div class="cap">کار باقی‌مانده</div>
           <div class="bg-ic">${icon('tasks')}</div>
         </div>
-        <div class="stat" style="background:var(--grad-mint)" data-jump="habits">
-          <div class="num">${toFa(habitToday)}</div>
-          <div class="cap">عادت امروز</div>
-          <div class="bg-ic">${icon('flame')}</div>
-        </div>
-        <div class="stat" style="background:var(--grad-rose)" data-jump="calendar">
-          <div class="num">${toFa(countTodayEvents(s, tk))}</div>
-          <div class="cap">رویداد امروز</div>
-          <div class="bg-ic">${icon('calendar')}</div>
-        </div>
-        <div class="stat" style="background:var(--grad-hero)" data-jump="tasks">
+        <div class="stat" style="background:var(--c-mint)" data-jump="agenda">
           <div class="num">${toFa(doneCount)}</div>
           <div class="cap">انجام‌شده</div>
           <div class="bg-ic">${icon('check')}</div>
+        </div>
+        <div class="stat" style="background:var(--c-rose)" data-jump="calendar">
+          <div class="num">${toFa(evs.length)}</div>
+          <div class="cap">رویداد امروز</div>
+          <div class="bg-ic">${icon('calendar')}</div>
+        </div>
+        <div class="stat" style="background:var(--c-azure)" data-jump="agenda">
+          <div class="num">${toFa(todays.length)}</div>
+          <div class="cap">کل برنامه</div>
+          <div class="bg-ic">${icon('timeline')}</div>
         </div>
       </div>
 
       <div style="height:14px"></div>
       <button class="btn btn-brand btn-block" data-jump="tasks">
-        ${icon('plus', 'width="20" height="20"')} افزودن وظیفه‌ی جدید
+        ${icon('plus', 'width="20" height="20"')} افزودن کار جدید
       </button>
     `
   },
 
   mount(root) {
-    attachTilt(root)
-    root.querySelectorAll('[data-jump]').forEach((el) => {
-      el.addEventListener('click', () => go(el.dataset.jump))
-    })
+    root.querySelectorAll('[data-jump]').forEach((el) =>
+      el.addEventListener('click', () => go(el.dataset.jump)))
+    bindTaskChecks(root, refresh)
   },
+}
+
+function tlItem(t) {
+  const b = timeBadge(t.time)
+  const p = PRIO[t.prio] || PRIO.mid
+  return `
+    <div class="tl-item">
+      <div class="tl-rail">
+        <div class="tl-node" style="color:${t.done ? 'var(--c-success)' : p.color}; background:${t.done ? 'var(--c-success)' : p.color}"></div>
+        <div class="tl-line"></div>
+      </div>
+      <div class="tl-body ${t.done ? 'done' : ''}">
+        <span class="tl-time">${t.time ? toFa(t.time) : '—'}</span>
+        <span class="tl-title">${escape(t.text)}</span>
+        <div class="check ${t.done ? 'on' : ''}" data-toggle="${t.id}">${icon('check')}</div>
+      </div>
+    </div>`
 }
 
 function greeting() {
@@ -115,6 +152,6 @@ function greeting() {
   return 'شب بخیر'
 }
 
-function countTodayEvents(s, tk) {
-  return (s.events[tk] || []).length
+function escape(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
