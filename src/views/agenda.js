@@ -1,17 +1,20 @@
 import { icon } from '../icons.js'
 import emptyImg from '../assets/empty-agenda.png'
 import celebrateImg from '../assets/celebrate.png'
+import morningImg from '../assets/time-morning.png'
+import afternoonImg from '../assets/time-afternoon.png'
+import eveningImg from '../assets/time-evening.png'
 import { getState, sortTasks, update } from '../store.js'
 import { go, refresh } from '../nav.js'
 import { todayKey, toFa, todayJalali, longDate } from '../jalali.js'
 import { PRIO, bindTaskChecks } from './tasks.js'
 
-// بازه‌های زمانی روز
+// بازه‌های زمانی روز — با تصویر illustration اختصاصی
 const SLOTS = [
-  { key: 'morning',   label: 'صبح',       range: [0, 12],  ic: 'sunrise',   color: 'var(--c-tangerine)' },
-  { key: 'afternoon', label: 'بعدازظهر',  range: [12, 18], ic: 'briefcase', color: 'var(--c-azure)' },
-  { key: 'evening',   label: 'شب',        range: [18, 24], ic: 'moon',      color: 'var(--c-indigo)' },
-  { key: 'anytime',   label: 'بدون زمان', range: null,     ic: 'clock',     color: 'var(--c-teal)' },
+  { key: 'morning',   label: 'صبح',       img: morningImg,   color: 'var(--c-tangerine)' },
+  { key: 'afternoon', label: 'بعدازظهر',  img: afternoonImg, color: 'var(--c-azure)' },
+  { key: 'evening',   label: 'شب',        img: eveningImg,   color: 'var(--c-indigo)' },
+  { key: 'anytime',   label: 'بدون زمان', img: morningImg,   color: 'var(--c-teal)' },
 ]
 
 function slotOf(time) {
@@ -93,8 +96,7 @@ function header(t, done, total) {
 function groupBlock({ slot, items }) {
   return `
     <div class="section-title">
-      <span class="tl-badge" style="background:${slot.color}; width:26px; height:26px">
-        ${icon(slot.ic, 'width="15" height="15"')}</span>
+      <img class="slot-illust" src="${slot.img}" alt="" />
       ${slot.label}
       <span class="grow"></span>
       <span style="font-size:12px; color:var(--text-soft); font-weight:800">${toFa(items.length)} کار</span>
