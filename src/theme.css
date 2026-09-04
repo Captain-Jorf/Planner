@@ -130,7 +130,7 @@ body {
   flex: 1; position: relative; z-index: 1;
   overflow-y: auto; overflow-x: hidden;
   padding: calc(env(safe-area-inset-top, 0px) + 16px) var(--pad)
-           calc(var(--nav-h) + 46px) var(--pad);
+           calc(var(--nav-h) + 60px) var(--pad);
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
@@ -252,53 +252,51 @@ body {
    نوار پایین
    ========================================================================== */
 .tabbar {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  position: absolute;
+  left: 14px; right: 14px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  height: var(--nav-h);
   background: var(--nav-bg);
-  border-top: 2px solid var(--line);
+  border: 2.5px solid var(--line);
+  border-radius: 26px;
   display: flex; align-items: stretch; z-index: 20;
+  box-shadow: 4px 6px 0 var(--line);
+  overflow: hidden;
 }
-:root[data-theme='dark'] .tabbar { border-top-color: var(--border); }
+:root[data-theme='dark'] .tabbar { border-color: var(--border); box-shadow: 4px 6px 0 #000; }
 .tab {
   flex: 1; border: none; background: none; cursor: pointer; font-family: inherit;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; color: var(--text-soft); font-size: 11px; font-weight: 800;
+  gap: 3px; color: var(--text-soft); font-size: 10.5px; font-weight: 800;
   transition: color .18s ease; position: relative;
 }
-.tab svg { width: 25px; height: 25px; transition: transform .22s cubic-bezier(.2,.8,.2,1); }
-/* آیکون‌های illustration نوار پایین */
-.nav-ic-img {
-  width: 29px; height: 29px; object-fit: contain;
-  transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .2s ease;
-  opacity: .55;
+/* آیکون‌های SVG رنگی نوار پایین */
+.nav-ic {
+  display: grid; place-items: center;
+  width: 44px; height: 40px; border-radius: 14px;
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), background .2s ease;
 }
-.tab.active .nav-ic-img { transform: translateY(-3px) scale(1.18); opacity: 1; }
-.tab.active { color: var(--brand); }
-.tab.active svg { transform: translateY(-2px) scale(1.12); }
-.tab.active::after {
-  content: ''; position: absolute; top: 6px;
-  width: 7px; height: 7px; border-radius: 50%; background: var(--brand);
-}
-.tab.spacer { flex: 1.1; pointer-events: none; }
+.nav-svg { width: 27px; height: 27px; transition: transform .22s cubic-bezier(.2,.8,.2,1); }
+.tab { opacity: .62; transition: opacity .2s ease, color .18s ease; }
+.tab.active { opacity: 1; color: var(--brand); }
+.tab.active .nav-ic { background: color-mix(in srgb, var(--brand) 16%, transparent); }
+.tab.active .nav-svg { transform: translateY(-1px) scale(1.08); }
+.tab.spacer { flex: 1.1; pointer-events: none; opacity: 1; }
 
 .home-fab {
-  position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+  position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 44px);
   left: 50%; transform: translateX(-50%);
-  width: 66px; height: 66px; border-radius: 22px;
-  border: 2.5px solid var(--line); cursor: pointer;
+  width: 66px; height: 66px; border-radius: 24px;
+  border: 3px solid var(--line); cursor: pointer;
   background: var(--c-indigo);
   display: grid; place-items: center; color: #fff; z-index: 25;
-  box-shadow: 4px 6px 0 var(--line);
-  transition: transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .16s ease;
+  box-shadow: 0 0 0 5px var(--bg), 4px 8px 0 var(--line);
+  transition: transform .16s cubic-bezier(.2,.8,.2,1), box-shadow .16s ease, background .2s ease;
 }
-:root[data-theme='dark'] .home-fab { border-color: transparent; box-shadow: 4px 6px 0 #000; }
-.home-fab svg { width: 30px; height: 30px; }
-.home-fab .nav-ic-img {
-  width: 40px; height: 40px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
-}
-.home-fab:active { transform: translateX(-50%) translate(2px,3px); box-shadow: 2px 3px 0 var(--line); }
-.home-fab.active { background: var(--c-magenta); }
+:root[data-theme='dark'] .home-fab { border-color: transparent; box-shadow: 0 0 0 5px var(--bg), 4px 8px 0 #000; }
+.home-fab .nav-svg { width: 36px; height: 36px; }
+.home-fab:active { transform: translateX(-50%) translate(2px,3px); box-shadow: 0 0 0 5px var(--bg), 2px 4px 0 var(--line); }
+.home-fab.active { background: var(--c-magenta); transform: translateX(-50%) scale(1.05); }
 
 /* ==========================================================================
    حلقه‌ی پیشرفت
@@ -411,7 +409,7 @@ body {
 
 /* توست */
 .toast {
-  position: absolute; left: 50%; bottom: calc(var(--nav-h) + 30px);
+  position: absolute; left: 50%; bottom: calc(var(--nav-h) + 44px);
   transform: translateX(-50%) translateY(20px);
   background: var(--c-ink); color: #fff;
   padding: 11px 20px; border-radius: 999px; font-size: 14px; font-weight: 800;

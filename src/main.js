@@ -3,11 +3,7 @@ import './theme.css'
 import { getState, subscribe } from './store.js'
 import { views } from './views/index.js'
 import { setNav } from './nav.js'
-import navCalendar from './assets/nav-calendar.png'
-import navTasks from './assets/nav-tasks.png'
-import navHome from './assets/nav-home.png'
-import navAgenda from './assets/nav-agenda.png'
-import navSettings from './assets/nav-settings.png'
+import { navIcons } from './navicons.js'
 
 const TABS = ['calendar', 'tasks', 'home', 'agenda', 'settings']
 let current = 'home'
@@ -20,7 +16,7 @@ function buildShell() {
     <main class="screen" id="screen"><div class="view" id="view-root"></div></main>
     <nav class="tabbar" id="tabbar"></nav>
     <button class="home-fab" id="home-fab" data-tab="home" aria-label="خانه">
-      <img class="nav-ic-img" src="${navHome}" alt="خانه" />
+      ${navIcons.home}
     </button>
     <div class="toast" id="toast"></div>
   `
@@ -30,16 +26,16 @@ function buildShell() {
 
 function buildTabbar() {
   const tabbar = app.querySelector('#tabbar')
-  const item = (id, label, img) =>
+  const item = (id, label, svg) =>
     `<button class="tab" data-tab="${id}">
-       <img class="nav-ic-img" src="${img}" alt="${label}" /><span>${label}</span>
+       <span class="nav-ic">${svg}</span><span>${label}</span>
      </button>`
   tabbar.innerHTML = `
-    ${item('calendar', 'تقویم', navCalendar)}
-    ${item('tasks', 'وظایف', navTasks)}
+    ${item('calendar', 'تقویم', navIcons.calendar)}
+    ${item('tasks', 'وظایف', navIcons.tasks)}
     <div class="tab spacer"></div>
-    ${item('agenda', 'برنامه', navAgenda)}
-    ${item('settings', 'تنظیمات', navSettings)}
+    ${item('agenda', 'برنامه', navIcons.agenda)}
+    ${item('settings', 'تنظیمات', navIcons.settings)}
   `
   tabbar.querySelectorAll('[data-tab]').forEach((el) =>
     el.addEventListener('click', () => go(el.dataset.tab)))
