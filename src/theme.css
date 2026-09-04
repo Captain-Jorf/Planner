@@ -106,16 +106,25 @@ body {
   background: var(--bg);
 }
 
-/* بافت زمینه‌ی پست‌مدرن — تصویر illustration دودل‌های برنامه‌ریزی */
+/* پس‌زمینه‌ی ساده — دو شکل بزرگ و زیبا (بدون تصویر شلوغ) */
 #app::before {
   content: '';
-  position: absolute; inset: 0;
-  background-image: var(--bg-doodle);
-  background-size: 340px auto;
-  background-repeat: repeat;
-  opacity: .5; pointer-events: none; z-index: 0;
+  position: absolute;
+  top: -120px; right: -110px;
+  width: 320px; height: 320px; border-radius: 50%;
+  background: var(--c-violet);
+  opacity: .16; pointer-events: none; z-index: 0;
 }
-:root[data-theme='dark'] #app::before { opacity: .12; }
+#app::after {
+  content: '';
+  position: absolute;
+  bottom: 40px; left: -120px;
+  width: 300px; height: 300px; border-radius: 42% 58% 60% 40% / 45% 45% 55% 55%;
+  background: var(--c-sky);
+  opacity: .14; pointer-events: none; z-index: 0;
+}
+:root[data-theme='dark'] #app::before { opacity: .22; }
+:root[data-theme='dark'] #app::after { opacity: .18; }
 
 .screen {
   flex: 1; position: relative; z-index: 1;
@@ -260,11 +269,11 @@ body {
 .tab svg { width: 25px; height: 25px; transition: transform .22s cubic-bezier(.2,.8,.2,1); }
 /* آیکون‌های illustration نوار پایین */
 .nav-ic-img {
-  width: 30px; height: 30px; object-fit: contain;
-  transition: transform .22s cubic-bezier(.2,.8,.2,1), filter .2s ease;
-  filter: grayscale(.35) opacity(.72);
+  width: 29px; height: 29px; object-fit: contain;
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .2s ease;
+  opacity: .55;
 }
-.tab.active .nav-ic-img { transform: translateY(-3px) scale(1.16); filter: none; }
+.tab.active .nav-ic-img { transform: translateY(-3px) scale(1.18); opacity: 1; }
 .tab.active { color: var(--brand); }
 .tab.active svg { transform: translateY(-2px) scale(1.12); }
 .tab.active::after {
@@ -457,6 +466,12 @@ body {
 /* ردیف انتخاب رنگ رویداد — می‌شکند، اسکرول نمی‌خورد */
 .color-row { display: flex; flex-wrap: wrap; gap: 10px; }
 
+/* فیلدهای زمان شروع/پایان رویداد */
+.time-fields { display: flex; align-items: flex-end; gap: 10px; margin-top: 12px; }
+.time-fields .tf { flex: 1; min-width: 0; }
+.time-fields .tf label { display: block; font-size: 11px; font-weight: 800; color: var(--text-soft); margin: 0 2px 6px; }
+.time-fields .tf-arrow { color: var(--text-soft); padding-bottom: 12px; flex-shrink: 0; }
+
 /* ==========================================================================
    تایم‌لاین
    ========================================================================== */
@@ -497,3 +512,64 @@ body {
 
 /* استیکر تصویر کوچک برای بخش‌ها */
 .slot-illust { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+
+/* ==========================================================================
+   صفحه‌ی برنامه — پایپ‌لاین تسک‌ها
+   ========================================================================== */
+.agenda-summary { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.ring-mini { flex-shrink: 0; width: 64px; height: 64px; }
+
+.pipe { position: relative; margin: 4px 0 16px; }
+
+/* برچسب بخش زمانی */
+.pipe-divider { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; padding-inline-start: 54px; }
+.pipe-divider .pd-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-soft); flex-shrink: 0; }
+.pipe-divider .pd-label { font-size: 12px; font-weight: 900; color: var(--text-soft); letter-spacing: .3px; }
+.pipe-divider .pd-line { flex: 1; height: 2px; border-radius: 2px; background: var(--border); }
+
+/* نشانگر اکنون */
+.pipe-now { display: flex; align-items: center; gap: 0; margin: 4px 0 10px; padding-inline-start: 46px; position: relative; }
+.pipe-now .pn-dot {
+  width: 14px; height: 14px; border-radius: 50%; background: var(--c-coral);
+  border: 3px solid var(--surface); box-shadow: 0 0 0 3px var(--c-coral); flex-shrink: 0;
+  animation: nowPulse 1.8s ease-in-out infinite;
+}
+@keyframes nowPulse { 0%,100% { box-shadow: 0 0 0 3px var(--c-coral); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--c-coral) 30%, transparent); } }
+.pipe-now .pn-line { flex: 1; height: 3px; background: var(--c-coral); border-radius: 3px; margin: 0 8px; opacity: .55; }
+.pipe-now .pn-label { font-size: 11px; font-weight: 900; color: var(--c-coral); flex-shrink: 0; }
+
+/* ایستگاه پایپ‌لاین */
+.pipe-item { display: flex; align-items: stretch; gap: 0; min-height: 62px; }
+.pipe-item .pi-time {
+  width: 46px; flex-shrink: 0; text-align: center; padding-top: 12px;
+}
+.pipe-item .pi-hh { font-size: 12.5px; font-weight: 900; color: var(--text); white-space: nowrap; }
+.pipe-item.done .pi-hh { color: var(--text-soft); }
+
+.pipe-item .pi-rail {
+  width: 22px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+  padding-top: 14px;
+}
+.pipe-item .pi-node {
+  width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; z-index: 2;
+  border: 3px solid var(--surface);
+}
+.pipe-item .pi-line { width: 3px; flex: 1; background: var(--border); border-radius: 3px; margin-top: 3px; min-height: 20px; }
+
+.pipe-item .pi-card {
+  flex: 1; min-width: 0; margin: 0 0 14px 0;
+  background: var(--surface); border: 2px solid var(--line); border-radius: var(--r-md);
+  box-shadow: 3px 4px 0 var(--line);
+  padding: 11px 13px; display: flex; align-items: center; gap: 10px;
+}
+:root[data-theme='dark'] .pipe-item .pi-card { border-color: var(--border); box-shadow: 3px 4px 0 #000; }
+.pipe-item.done .pi-card { opacity: .62; }
+.pipe-item .pi-main { flex: 1; min-width: 0; }
+.pipe-item .pi-title { display: block; font-weight: 800; font-size: 14.5px; line-height: 1.4; word-break: break-word; }
+.pipe-item.done .pi-title { text-decoration: line-through; color: var(--text-soft); }
+.pipe-item .pi-prio {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 6px;
+  font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px;
+}
+.pipe-item .pi-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.pipe-item .pi-actions .del { width: 30px; height: 30px; }

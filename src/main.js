@@ -8,15 +8,11 @@ import navTasks from './assets/nav-tasks.png'
 import navHome from './assets/nav-home.png'
 import navAgenda from './assets/nav-agenda.png'
 import navSettings from './assets/nav-settings.png'
-import bgDoodle from './assets/bg-pattern.png'
 
 const TABS = ['calendar', 'tasks', 'home', 'agenda', 'settings']
 let current = 'home'
 
 const app = document.getElementById('app')
-
-// تزریق تصویر پس‌زمینه‌ی دودل
-document.documentElement.style.setProperty('--bg-doodle', `url("${bgDoodle}")`)
 
 // شل اپ فقط یک‌بار ساخته می‌شود؛ فقط محتوای نما به‌روز می‌شود (بهینه)
 function buildShell() {

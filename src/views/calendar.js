@@ -66,10 +66,19 @@ export const calendar = {
       </div>
 
       <div class="card" style="padding:14px">
-        <div style="display:flex; gap:10px">
-          <input class="input" id="ev-input" placeholder="عنوان رویداد..." />
-          <input class="input" id="ev-time" type="text" inputmode="numeric" placeholder="۰۹:۳۰"
-            style="max-width:90px; text-align:center" />
+        <input class="input" id="ev-input" placeholder="عنوان رویداد..." />
+        <div class="time-fields">
+          <div class="tf">
+            <label>از ساعت</label>
+            <input class="input" id="ev-start" type="text" inputmode="numeric"
+              placeholder="۰۹:۰۰" style="text-align:center" />
+          </div>
+          <span class="tf-arrow">${icon('arrowLeft', 'width="18" height="18"')}</span>
+          <div class="tf">
+            <label>تا ساعت</label>
+            <input class="input" id="ev-end" type="text" inputmode="numeric"
+              placeholder="۱۰:۳۰" style="text-align:center" />
+          </div>
         </div>
         <div style="font-size:12px; color:var(--text-soft); font-weight:800; margin:14px 2px 8px">رنگ رویداد</div>
         <div class="color-row">
@@ -102,21 +111,26 @@ export const calendar = {
       el.addEventListener('click', () => { newColor = el.dataset.color; refresh() }))
 
     const input = root.querySelector('#ev-input')
-    const time = root.querySelector('#ev-time')
+    const startEl = root.querySelector('#ev-start')
+    const endEl = root.querySelector('#ev-end')
     root.querySelector('#add-ev').addEventListener('click', () => {
       const title = input.value.trim()
       if (!title) { toast('عنوان رویداد را بنویس'); input.focus(); return }
+      const start = normalizeTime(startEl.value)
+      const end = normalizeTime(endEl.value)
+      if (start && end && end <= start) { toast('زمان پایان باید بعد از شروع باشد'); endEl.focus(); return }
       const id = nextId()
       const key = dayKey(selY, selM, selD)
       update((s) => {
         if (!s.events[key]) s.events[key] = []
-        s.events[key].push({ id, title, time: time.value.trim(), color: newColor })
+        s.events[key].push({ id, title, time: start, end, color: newColor })
         s.events[key].sort((a, b) => (a.time || '99').localeCompare(b.time || '99'))
       })
       toast('رویداد ثبت شد 📌')
       refresh()
     })
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') root.querySelector('#add-ev').click() })
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') startEl.focus() })
+    endEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') root.querySelector('#add-ev').click() })
 
     root.querySelectorAll('[data-delev]').forEach((el) =>
       el.addEventListener('click', () => {
@@ -147,17 +161,36 @@ function colorDot(c) {
     border:${on ? '3px solid var(--text)' : '2px solid var(--border)'};cursor:pointer;flex-shrink:0"></button>`
 }
 
+function timeText(e) {
+  if (e.time && e.end) return `${toFa(e.time)} – ${toFa(e.end)}`
+  if (e.time) return `از ${toFa(e.time)}`
+  if (e.end) return `تا ${toFa(e.end)}`
+  return ''
+}
+
 function evRow(e) {
+  const tt = timeText(e)
   return `
     <div class="list-item">
-      <div style="width:6px;height:38px;border-radius:6px;background:${e.color};flex-shrink:0"></div>
-      <div style="flex:1">
+      <div style="width:6px;height:42px;border-radius:6px;background:${e.color};flex-shrink:0"></div>
+      <div style="flex:1; min-width:0">
         <div class="li-text">${escape(e.title)}</div>
-        ${e.time ? `<div class="li-sub" style="display:inline-flex;align-items:center;gap:4px">
-          ${icon('clock', 'width="12" height="12"')} ${toFa(e.time)}</div>` : ''}
+        ${tt ? `<div class="li-sub" style="display:inline-flex;align-items:center;gap:4px">
+          ${icon('clock', 'width="12" height="12"')} ${tt}</div>` : ''}
       </div>
       <button class="del" data-delev="${e.id}">${icon('trash', 'width="16" height="16"')}</button>
     </div>`
+}
+
+// نرمال‌سازی زمان: پذیرش ارقام فارسی/لاتین → «HH:MM»
+function normalizeTime(v) {
+  const raw = String(v || '').replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).trim()
+  if (!raw) return ''
+  const m = raw.match(/^(\d{1,2})[:٫.]?(\d{0,2})$/)
+  if (!m) return ''
+  const hh = String(Math.min(23, +m[1])).padStart(2, '0')
+  const mm = String(Math.min(59, +(m[2] || 0))).padStart(2, '0')
+  return `${hh}:${mm}`
 }
 
 function escape(str) {

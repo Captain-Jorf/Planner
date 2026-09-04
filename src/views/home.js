@@ -19,15 +19,6 @@ function ring(pct, color) {
     </div>`
 }
 
-// انتخاب آیکون خوشامد بر اساس ساعت روز رویداد تایم‌لاین
-function timeBadge(time) {
-  const h = parseInt((time || '12').split(':')[0], 10)
-  if (h < 9) return { ic: 'sunrise', color: 'var(--c-tangerine)' }
-  if (h < 12) return { ic: 'coffee', color: 'var(--c-teal)' }
-  if (h < 18) return { ic: 'briefcase', color: 'var(--c-azure)' }
-  return { ic: 'moon', color: 'var(--c-indigo)' }
-}
-
 export const home = {
   render() {
     const s = getState()
@@ -127,7 +118,6 @@ export const home = {
 }
 
 function tlItem(t) {
-  const b = timeBadge(t.time)
   const p = PRIO[t.prio] || PRIO.mid
   return `
     <div class="tl-item">
