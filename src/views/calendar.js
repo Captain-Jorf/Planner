@@ -14,6 +14,8 @@ let viewY = t0.jy
 let viewM = t0.jm
 let selY = t0.jy, selM = t0.jm, selD = t0.jd
 let newColor = EVENT_COLORS[5]
+let editId = null          // شناسه‌ی رویدادِ در حال ویرایش (null = افزودن)
+let draft = { title: '', start: '', end: '' }  // نگه‌داشتن ورودی هنگام رفرش
 
 export const calendar = {
   render() {
@@ -65,19 +67,22 @@ export const calendar = {
         رویدادهای ${longDate(selY, selM, selD, selDow())}
       </div>
 
-      <div class="card" style="padding:14px">
-        <input class="input" id="ev-input" placeholder="عنوان رویداد..." />
+      <div class="card ${editId ? 'editing' : ''}" style="padding:14px">
+        ${editId ? `<div class="edit-banner">
+          ${icon('edit', 'width="15" height="15"')} در حال ویرایش رویداد
+          <button class="edit-cancel" id="ev-cancel">انصراف</button></div>` : ''}
+        <input class="input" id="ev-input" placeholder="عنوان رویداد..." value="${escape(draft.title)}" />
         <div class="time-fields">
           <div class="tf">
             <label>از ساعت</label>
             <input class="input" id="ev-start" type="text" inputmode="numeric"
-              placeholder="۰۹:۰۰" style="text-align:center" />
+              placeholder="۰۹:۰۰" style="text-align:center" value="${draft.start ? toFa(draft.start) : ''}" />
           </div>
           <span class="tf-arrow">${icon('arrowLeft', 'width="18" height="18"')}</span>
           <div class="tf">
             <label>تا ساعت</label>
             <input class="input" id="ev-end" type="text" inputmode="numeric"
-              placeholder="۱۰:۳۰" style="text-align:center" />
+              placeholder="۱۰:۳۰" style="text-align:center" value="${draft.end ? toFa(draft.end) : ''}" />
           </div>
         </div>
         <div style="font-size:12px; color:var(--text-soft); font-weight:800; margin:14px 2px 8px">رنگ رویداد</div>
@@ -85,7 +90,7 @@ export const calendar = {
           ${EVENT_COLORS.map(colorDot).join('')}
         </div>
         <button class="btn btn-brand btn-block" id="add-ev" style="margin-top:14px">
-          ${icon('plus', 'width="18" height="18"')} افزودن رویداد</button>
+          ${icon(editId ? 'check' : 'plus', 'width="18" height="18"')} ${editId ? 'ذخیره‌ی تغییرات' : 'افزودن رویداد'}</button>
       </div>
 
       <div style="margin-top:14px" id="ev-list">
@@ -113,30 +118,74 @@ export const calendar = {
     const input = root.querySelector('#ev-input')
     const startEl = root.querySelector('#ev-start')
     const endEl = root.querySelector('#ev-end')
+
+    // نگه‌داشتن پیش‌نویس هنگام تایپ تا رفرش‌ها آن را پاک نکنند
+    const syncDraft = () => {
+      draft.title = input.value
+      draft.start = normalizeTime(startEl.value)
+      draft.end = normalizeTime(endEl.value)
+    }
+    input.addEventListener('input', syncDraft)
+    startEl.addEventListener('input', syncDraft)
+    endEl.addEventListener('input', syncDraft)
+
     root.querySelector('#add-ev').addEventListener('click', () => {
       const title = input.value.trim()
       if (!title) { toast('عنوان رویداد را بنویس'); input.focus(); return }
       const start = normalizeTime(startEl.value)
       const end = normalizeTime(endEl.value)
       if (start && end && end <= start) { toast('زمان پایان باید بعد از شروع باشد'); endEl.focus(); return }
-      const id = nextId()
       const key = dayKey(selY, selM, selD)
-      update((s) => {
-        if (!s.events[key]) s.events[key] = []
-        s.events[key].push({ id, title, time: start, end, color: newColor })
-        s.events[key].sort((a, b) => (a.time || '99').localeCompare(b.time || '99'))
-      })
-      toast('رویداد ثبت شد 📌')
+      if (editId != null) {
+        // ذخیره‌ی ویرایش
+        update((s) => {
+          const ev = (s.events[key] || []).find((e) => e.id === editId)
+          if (ev) { ev.title = title; ev.time = start; ev.end = end; ev.color = newColor }
+          if (s.events[key]) s.events[key].sort((a, b) => (a.time || '99').localeCompare(b.time || '99'))
+        })
+        toast('تغییرات ذخیره شد ✅')
+        editId = null
+      } else {
+        const id = nextId()
+        update((s) => {
+          if (!s.events[key]) s.events[key] = []
+          s.events[key].push({ id, title, time: start, end, color: newColor })
+          s.events[key].sort((a, b) => (a.time || '99').localeCompare(b.time || '99'))
+        })
+        toast('رویداد ثبت شد 📌')
+      }
+      draft = { title: '', start: '', end: '' }
       refresh()
     })
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') startEl.focus() })
     endEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') root.querySelector('#add-ev').click() })
 
-    root.querySelectorAll('[data-delev]').forEach((el) =>
+    const cancelBtn = root.querySelector('#ev-cancel')
+    if (cancelBtn) cancelBtn.addEventListener('click', () => {
+      editId = null; draft = { title: '', start: '', end: '' }; refresh()
+    })
+
+    // ضربه روی رویداد → ورود به حالت ویرایش (پیش‌پرشدن فرم)
+    root.querySelectorAll('[data-editev]').forEach((el) =>
       el.addEventListener('click', () => {
+        const id = +el.dataset.editev
+        const key = dayKey(selY, selM, selD)
+        const ev = (getState().events[key] || []).find((e) => e.id === id)
+        if (!ev) return
+        editId = id
+        draft = { title: ev.title, start: ev.time || '', end: ev.end || '' }
+        newColor = ev.color || newColor
+        refresh()
+        setTimeout(() => root.querySelector('#ev-input') && root.querySelector('#ev-input').focus(), 0)
+      }))
+
+    root.querySelectorAll('[data-delev]').forEach((el) =>
+      el.addEventListener('click', (e) => {
+        e.stopPropagation()
         const id = +el.dataset.delev
         const key = dayKey(selY, selM, selD)
-        update((s) => { if (s.events[key]) s.events[key] = s.events[key].filter((e) => e.id !== id) })
+        update((s) => { if (s.events[key]) s.events[key] = s.events[key].filter((ev) => ev.id !== id) })
+        if (editId === id) { editId = null; draft = { title: '', start: '', end: '' } }
         toast('حذف شد 🗑️')
         refresh()
       }))
@@ -171,13 +220,15 @@ function timeText(e) {
 function evRow(e) {
   const tt = timeText(e)
   return `
-    <div class="list-item">
+    <div class="list-item ev-row" data-editev="${e.id}">
       <div style="width:6px;height:42px;border-radius:6px;background:${e.color};flex-shrink:0"></div>
       <div style="flex:1; min-width:0">
         <div class="li-text">${escape(e.title)}</div>
         ${tt ? `<div class="li-sub" style="display:inline-flex;align-items:center;gap:4px">
           ${icon('clock', 'width="12" height="12"')} ${tt}</div>` : ''}
       </div>
+      <span class="del" title="ویرایش" style="color:var(--c-indigo); pointer-events:none">
+        ${icon('edit', 'width="15" height="15"')}</span>
       <button class="del" data-delev="${e.id}">${icon('trash', 'width="16" height="16"')}</button>
     </div>`
 }
