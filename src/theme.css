@@ -388,6 +388,7 @@ body {
    ========================================================================== */
 .empty { text-align: center; padding: 20px 16px; color: var(--text-soft); }
 .empty img { width: 210px; max-width: 68%; height: auto; margin-bottom: 6px; filter: drop-shadow(0 12px 18px rgba(var(--shadow-rgb),.18)); }
+.empty .il-empty { width: 168px; max-width: 56%; height: auto; margin-bottom: 8px; }
 .empty p { font-size: 14px; font-weight: 800; }
 
 /* ==========================================================================
@@ -448,10 +449,12 @@ body {
   position: relative; z-index: 2; flex-shrink: 0;
   width: 118px; height: 118px; display: grid; place-items: center;
 }
-.hero .hero-art img {
+.hero .hero-art img,
+.hero .hero-art .il-hero {
   width: 100%; height: 100%; object-fit: contain;
   filter: drop-shadow(0 6px 8px rgba(0,0,0,.28));
 }
+.hero .hero-art .il-hero { width: 132px; }
 .hero .hero-date { font-size: 12px; font-weight: 800; opacity: .95; }
 .hero .hero-big { font-size: 22px; font-weight: 900; margin: 7px 0 6px; letter-spacing: -.5px; line-height: 1.24; word-break: break-word; }
 .hero .hero-sub { font-size: 13px; opacity: .96; line-height: 1.6; font-weight: 700; }
@@ -660,3 +663,47 @@ body {
 }
 .ev-row { cursor: pointer; }
 .ev-row:active { transform: translateY(1px); }
+
+/* ==========================================================================
+   آنبوردینگ / صفحات راهنما
+   ========================================================================== */
+.onb-root { position: absolute; inset: 0; z-index: 60; background: var(--bg); }
+.onb-wrap {
+  height: 100%; display: flex; flex-direction: column;
+  padding: calc(env(safe-area-inset-top,0px) + 20px) 22px calc(env(safe-area-inset-bottom,0px) + 22px);
+  max-width: 480px; margin: 0 auto;
+}
+.onb-top { display: flex; align-items: center; justify-content: space-between; }
+.onb-dots { display: flex; gap: 7px; }
+.onb-dot {
+  width: 8px; height: 8px; border-radius: 999px; background: var(--border);
+  transition: width .25s ease, background .25s ease;
+}
+.onb-dot.on { width: 26px; background: var(--brand); }
+.onb-dot.done { background: var(--c-mint); }
+.onb-skip {
+  border: none; background: none; cursor: pointer; font-family: inherit;
+  color: var(--text-soft); font-weight: 800; font-size: 13.5px;
+}
+.onb-body {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; gap: 6px;
+}
+.onb-art {
+  width: 240px; max-width: 78%; margin-bottom: 14px;
+  filter: drop-shadow(0 14px 20px rgba(var(--shadow-rgb),.16));
+}
+.onb-art .il-onb { width: 100%; height: auto; }
+.onb-title { font-size: 25px; font-weight: 900; letter-spacing: -.5px; margin: 4px 0; }
+.onb-text { font-size: 15px; line-height: 1.85; color: var(--text-soft); font-weight: 700; max-width: 340px; }
+.onb-input { margin-top: 18px; text-align: center; font-size: 16px; max-width: 320px; }
+.onb-perm { margin-top: 18px; max-width: 320px; }
+.onb-perm-note { font-size: 12.5px; font-weight: 700; margin-top: 10px; min-height: 16px; }
+.onb-foot { padding-top: 18px; }
+
+/* اعتبار توسعه‌دهنده در بخش درباره */
+.dev-credit {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 14px; padding-top: 14px; border-top: 1.5px dashed var(--border);
+}
+.dev-credit small { display: block; font-size: 11.5px; }

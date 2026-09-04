@@ -1,5 +1,5 @@
 import { icon } from '../icons.js'
-import emptyImg from '../assets/empty-agenda.png'
+import { emptyAgendaSvg } from '../illus.js'
 import { getState, update, nextId } from '../store.js'
 import { toast, refresh } from '../nav.js'
 import {
@@ -95,7 +95,7 @@ export const calendar = {
 
       <div style="margin-top:14px" id="ev-list">
         ${dayEvents.length === 0
-          ? `<div class="empty"><img src="${emptyImg}" alt="" /><p>برای این روز رویدادی ثبت نشده</p></div>`
+          ? `<div class="empty">${emptyAgendaSvg}<p>برای این روز رویدادی ثبت نشده</p></div>`
           : dayEvents.map(evRow).join('')}
       </div>
     `

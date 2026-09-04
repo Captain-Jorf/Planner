@@ -1,5 +1,5 @@
 import { icon } from '../icons.js'
-import heroImg from '../assets/hero.png'
+import { heroSvg } from '../illus.js'
 import { getState, update, nextId, sortTasks, tasksForDay, taskEnd } from '../store.js'
 import { go, refresh, toast } from '../nav.js'
 import { todayJalali, longDate, toFa, todayKey } from '../jalali.js'
@@ -53,7 +53,7 @@ export const home = {
             ? `کار بعدی${next.time ? ' ساعت ' + toFa(next.time) : ''} ✨`
             : 'امروز کار بازی نداری. وقت استراحت 🌿'}</div>
         </div>
-        <div class="hero-art"><img src="${heroImg}" alt="" /></div>
+        <div class="hero-art">${heroSvg}</div>
       </div>
 
       <div class="section-title"><span class="dot" style="background:var(--c-indigo)"></span> پیشرفت امروز</div>

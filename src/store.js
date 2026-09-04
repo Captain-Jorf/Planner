@@ -1,9 +1,7 @@
 // مدیریت وضعیت با ذخیره‌سازی محلی (localStorage) — آفلاین و ماندگار
-import { todayKey, dowOfKey } from './jalali.js'
+import { dowOfKey } from './jalali.js'
 
-const KEY = 'planner.state.v4'
-
-const tk = todayKey()
+const KEY = 'planner.state.v5'
 
 // تگ‌های پیش‌فرض (دسته‌بندی رنگی کارها)
 const DEFAULT_TAGS = [
@@ -15,24 +13,20 @@ const DEFAULT_TAGS = [
 ]
 
 const defaultState = {
-  user: 'دوست خوب',
+  user: '',            // خالی = هنوز آنبوردینگ انجام نشده (نام پرسیده می‌شود)
+  onboarded: false,    // آیا صفحات راهنما و پرسش نام انجام شده؟
   theme: 'light',
   accent: 'indigo',
   notif: true,
   tags: structuredClone(DEFAULT_TAGS),
   tasks: [
-    { id: 1, text: 'مرور برنامه‌ی امروز', done: true,  prio: 'mid',  time: '08:00', dur: 30,  day: tk, tags: ['t-work'],   repeat: 'daily',  doneDays: [tk] },
-    { id: 2, text: 'ورزش صبحگاهی',        done: true,  prio: 'low',  time: '09:00', dur: 45,  day: tk, tags: ['t-health'], repeat: 'daily',  doneDays: [tk] },
-    { id: 3, text: 'نوشتن گزارش هفتگی',   done: false, prio: 'high', time: '11:30', dur: 90,  day: tk, tags: ['t-work'],   repeat: 'weekly', doneDays: [] },
-    { id: 4, text: 'جلسه‌ی تیم',           done: false, prio: 'high', time: '14:00', dur: 60,  day: tk, tags: ['t-work'],   repeat: 'none',   doneDays: [] },
-    { id: 5, text: 'تماس با خانواده',      done: false, prio: 'low',  time: '19:30', dur: 20,  day: tk, tags: ['t-home'],   repeat: 'none',   doneDays: [] },
-    { id: 6, text: 'مطالعه‌ی کتاب',        done: false, prio: 'mid',  time: '22:00', dur: 40,  day: tk, tags: ['t-study'],  repeat: 'daily',  doneDays: [] },
+    // حالت پیش‌فرض کاملاً خالی است — هیچ کاری از قبل وجود ندارد
   ],
   events: {
     // dayKey -> [ {id, title, time, end, color} ]
   },
   notes: [
-    { id: 7, text: 'ایده‌ها و یادداشت‌های سریع اینجا می‌آیند ✍️', color: '#ffc531', ts: Date.now() },
+    // حالت پیش‌فرض بدون یادداشت
   ],
   templates: [
     { id: 'tpl-morning', name: 'روتین صبح', items: [
@@ -66,6 +60,7 @@ function load() {
       if (!Array.isArray(merged.tags) || merged.tags.length === 0) merged.tags = structuredClone(DEFAULT_TAGS)
       if (!Array.isArray(merged.notes)) merged.notes = []
       if (!Array.isArray(merged.templates)) merged.templates = structuredClone(defaultState.templates)
+      if (typeof merged.onboarded !== 'boolean') merged.onboarded = !!merged.user
       return merged
     }
   } catch (e) { /* ignore */ }
@@ -161,4 +156,12 @@ export function sortTasks(list) {
 // یافتن تگ با شناسه
 export function getTag(id) {
   return getState().tags.find((t) => t.id === id)
+}
+
+// پایان آنبوردینگ: ذخیره‌ی نام و علامت‌گذاری راهنمای دیده‌شده
+export function completeOnboarding(name) {
+  update((s) => {
+    s.user = (name || '').trim() || 'دوست خوب'
+    s.onboarded = true
+  })
 }

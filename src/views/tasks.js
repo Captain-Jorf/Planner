@@ -1,6 +1,5 @@
 import { icon } from '../icons.js'
-import emptyImg from '../assets/empty-tasks.png'
-import celebrateImg from '../assets/celebrate.png'
+import { emptyTasksSvg, celebrateSvg } from '../illus.js'
 import {
   getState, update, nextId, sortTasks,
   tasksForDay, toggleTaskDone, taskEnd, getTag,
@@ -96,9 +95,9 @@ export const tasks = {
 
       <div style="margin-top:8px" id="task-list">
         ${allDone && filter !== 'open'
-          ? `<div class="empty"><img src="${celebrateImg}" alt="" /><p>آفرین! همه‌ی کارهای امروز انجام شد 🎉</p></div>`
+          ? `<div class="empty">${celebrateSvg}<p>آفرین! همه‌ی کارهای امروز انجام شد 🎉</p></div>`
           : list.length === 0
-            ? `<div class="empty"><img src="${emptyImg}" alt="" /><p>هیچ کاری اینجا نیست. یکی اضافه کن!</p></div>`
+            ? `<div class="empty">${emptyTasksSvg}<p>هیچ کاری اینجا نیست. یکی اضافه کن!</p></div>`
             : list.map(taskRow).join('')}
       </div>
     `

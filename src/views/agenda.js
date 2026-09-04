@@ -1,6 +1,5 @@
 import { icon } from '../icons.js'
-import emptyImg from '../assets/empty-agenda.png'
-import celebrateImg from '../assets/celebrate.png'
+import { emptyAgendaSvg, celebrateSvg } from '../illus.js'
 import { getState, update, tasksForDay, taskEnd, getTag } from '../store.js'
 import { go, refresh } from '../nav.js'
 import { todayKey, toFa, todayJalali, longDate } from '../jalali.js'
@@ -45,7 +44,7 @@ export const agenda = {
     if (stream.length === 0) {
       return `
         ${header(t, done, taskItems.length)}
-        <div class="empty"><img src="${emptyImg}" alt="" />
+        <div class="empty">${emptyAgendaSvg}
           <p>تایم‌لاین امروزت خالی است</p></div>
         <button class="btn btn-brand btn-block" data-jump="tasks" style="margin-top:8px">
           ${icon('plus', 'width=\"20\" height=\"20\"')} افزودن کار به برنامه</button>`
@@ -83,7 +82,7 @@ export const agenda = {
       </div>
 
       ${pct === 100 && taskItems.length
-        ? `<div class="empty"><img src="${celebrateImg}" alt="" /><p>همه‌ی کارهای امروز تکمیل شد! 🎉</p></div>`
+        ? `<div class="empty">${celebrateSvg}<p>همه‌ی کارهای امروز تکمیل شد! 🎉</p></div>`
         : ''}
 
       <div class="pipe">${rows.join('')}</div>

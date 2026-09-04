@@ -2,6 +2,7 @@ import { icon } from '../icons.js'
 import { getState, update, nextId, resetAll } from '../store.js'
 import { toast, refresh, go } from '../nav.js'
 import { toFa, todayKey } from '../jalali.js'
+import { requestAlarmPermission, fireTestAlarm, syncAlarms } from '../alarms.js'
 
 const TAG_COLORS = ['#f5384a', '#ff8a3d', '#ffc531', '#23c98a', '#2ba8f5', '#9b59f6', '#e04bce', '#12a5b3']
 let newTagColor = TAG_COLORS[5]
@@ -44,9 +45,14 @@ export const settings = {
         </div>
         <div class="setting-row">
           <div class="ic" style="background:var(--c-rose)">${icon('bell', 'width=\"20\" height=\"20\"')}</div>
-          <div class="txt"><b>یادآوری‌ها</b><small>اعلان کارها</small></div>
+          <div class="txt"><b>یادآوری‌ها</b><small>اعلان کارها و رویدادها سر ساعت</small></div>
           <button class="switch ${s.notif ? 'on' : ''}" id="notif-switch"><span class="knob"></span></button>
         </div>
+        ${s.notif ? `<div style="padding:0 16px 14px">
+          <button class="btn btn-ghost btn-block" id="test-alarm">
+            ${icon('bell', 'width=\"16\" height=\"16\"')} آزمایش آلارم</button>
+          <div id="alarm-note" style="font-size:12px; font-weight:700; color:var(--text-soft); text-align:center; margin-top:8px"></div>
+        </div>` : ''}
       </div>
 
       <div class="section-title"><span class="dot" style="background:var(--c-magenta)"></span> دسته‌ها (تگ)</div>
@@ -91,7 +97,15 @@ export const settings = {
             ${icon('star', 'width=\"24\" height=\"24\"')}</div>
           <div>
             <b style="font-size:16px">برنامه‌ریز روزانه</b>
-            <div style="font-size:12px;color:var(--text-soft);margin-top:2px;font-weight:600">نسخه‌ی ۷٫۰ · تاریخ شمسی · آفلاین</div>
+            <div style="font-size:12px;color:var(--text-soft);margin-top:2px;font-weight:600">نسخه‌ی ۹٫۰ · تاریخ شمسی · آفلاین</div>
+          </div>
+        </div>
+        <div class="dev-credit">
+          <div class="ic" style="width:40px;height:40px;background:var(--c-magenta);border-radius:12px;display:grid;place-items:center;color:#fff">
+            ${icon('user', 'width=\"20\" height=\"20\"')}</div>
+          <div>
+            <small style="color:var(--text-soft); font-weight:800">طراحی و توسعه</small>
+            <b style="font-size:15px; display:block">علیرضا رنجبر</b>
           </div>
         </div>
       </div>
@@ -110,10 +124,32 @@ export const settings = {
       update((s) => { s.theme = s.theme === 'dark' ? 'light' : 'dark' })
       refresh()
     })
-    root.querySelector('#notif-switch').addEventListener('click', () => {
+    root.querySelector('#notif-switch').addEventListener('click', async () => {
+      const turningOn = !getState().notif
       update((s) => { s.notif = !s.notif })
-      toast(getState().notif ? 'یادآوری‌ها روشن شد 🔔' : 'یادآوری‌ها خاموش شد')
+      if (turningOn) {
+        const res = await requestAlarmPermission()
+        if (res === 'granted') { toast('یادآوری‌ها روشن شد'); syncAlarms().catch(() => {}) }
+        else if (res === 'denied') toast('برای یادآوری، دسترسی اعلان لازم است')
+        else toast('یادآوری‌ها روشن شد')
+      } else {
+        toast('یادآوری‌ها خاموش شد')
+        syncAlarms().catch(() => {})
+      }
       refresh()
+    })
+
+    const testBtn = root.querySelector('#test-alarm')
+    if (testBtn) testBtn.addEventListener('click', async () => {
+      const note = root.querySelector('#alarm-note')
+      testBtn.disabled = true
+      const res = await fireTestAlarm()
+      testBtn.disabled = false
+      if (note) {
+        if (res === 'granted') note.textContent = 'یک اعلان آزمایشی تا چند ثانیه‌ی دیگر می‌رسد.'
+        else if (res === 'denied') note.textContent = 'دسترسی اعلان رد شده است.'
+        else note.textContent = 'روی این دستگاه در دسترس نیست (در نسخه‌ی نصب‌شده کار می‌کند).'
+      }
     })
 
     // دسته‌ها

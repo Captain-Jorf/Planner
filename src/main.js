@@ -2,13 +2,31 @@ import 'vazirmatn/Vazirmatn-font-face.css'
 import './theme.css'
 import { getState, subscribe } from './store.js'
 import { views } from './views/index.js'
+import { onboarding } from './views/onboarding.js'
 import { setNav } from './nav.js'
 import { navIcons } from './navicons.js'
+import { syncAlarms } from './alarms.js'
 
 const TABS = ['calendar', 'tasks', 'home', 'agenda', 'settings']
 let current = 'home'
 
 const app = document.getElementById('app')
+
+// نمایش صفحات راهنما/آنبوردینگ اگر هنوز انجام نشده
+function showOnboarding() {
+  onboarding.reset()
+  app.innerHTML = `<div class="onb-root" id="onb-root"></div>`
+  const root = app.querySelector('#onb-root')
+  onboarding.render && (root.innerHTML = onboarding.render())
+  onboarding.mount(root, { finish: startApp })
+}
+
+function startApp() {
+  buildShell()
+  renderView(true)
+  // زمان‌بندی یادآوری‌ها بر پایه‌ی وضعیت فعلی
+  syncAlarms().catch(() => {})
+}
 
 // شل اپ فقط یک‌بار ساخته می‌شود؛ فقط محتوای نما به‌روز می‌شود (بهینه)
 function buildShell() {
@@ -93,6 +111,17 @@ function applyTheme() {
 setNav({ go, toast, refresh })
 subscribe(applyTheme)
 
+// هر بار داده تغییر کرد، یادآوری‌ها را دوباره بچین (بی‌خطر روی وب)
+let alarmTimer
+subscribe(() => {
+  if (!getState().onboarded) return
+  clearTimeout(alarmTimer)
+  alarmTimer = setTimeout(() => { syncAlarms().catch(() => {}) }, 600)
+})
+
 applyTheme()
-buildShell()
-renderView(true)
+if (getState().onboarded) {
+  startApp()
+} else {
+  showOnboarding()
+}
